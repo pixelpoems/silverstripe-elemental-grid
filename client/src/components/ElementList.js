@@ -11,6 +11,30 @@ import { getDragIndicatorIndex } from 'lib/dragHelpers';
 import { getElementTypeConfig } from 'state/editor/elementConfig';
 
 class ElementList extends Component {
+  constructor(props) {
+    super(props);
+    this.handleSaveAllElements = this.handleSaveAllElements.bind(this);
+    // Elemental >= 5.3 calls sharedObject.setState() from its entwine onbeforesubmitform
+    // hook and blocks the page form submission until sharedObject.entwineResolve() is called
+    if (props.sharedObject) {
+      props.sharedObject.setState = this.handleSaveAllElements;
+    }
+  }
+
+  /**
+   * Blocks are not inline editable in the grid (see BaseElementExtension::$inline_editable),
+   * so there are no element forms to save or validate - resolve the submission immediately.
+   */
+  handleSaveAllElements(state) {
+    const { sharedObject } = this.props;
+    if (!state || !state.saveAllElements || !sharedObject) {
+      return;
+    }
+    if (typeof sharedObject.entwineResolve === 'function') {
+      sharedObject.entwineResolve({ success: true, reason: '' });
+    }
+  }
+
   getDragIndicatorIndex() {
     const { dragTargetElementId, draggedItem, blocks, dragSpot } = this.props;
     return getDragIndicatorIndex(
@@ -129,11 +153,16 @@ ElementList.propTypes = {
   onDragOver: PropTypes.func,
   onDragStart: PropTypes.func,
   onDragEnd: PropTypes.func,
+  sharedObject: PropTypes.shape({
+    entwineResolve: PropTypes.func,
+    setState: PropTypes.func,
+  }),
 };
 
 ElementList.defaultProps = {
   blocks: [],
   loading: false,
+  sharedObject: null,
 };
 
 export { ElementList as Component };

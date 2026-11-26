@@ -64,7 +64,10 @@ class ColumnSize extends PureComponent {
    */
   saveColumnValue(type, value) {
     const { elementId, defaultViewport } = this.props;
-    const url = `${Config.get('adminUrl')}elemental-area/gridColumn/${elementId}`;
+    const section = Config.getSection('DNADesign\\Elemental\\Controllers\\ElementalAreaController');
+    const baseUrl = Config.get('absoluteBaseUrl').replace(/\/+$/, '');
+    const controllerUrl = section.url.replace(/^\/+|\/+$/g, '');
+    const url = `${baseUrl}/${controllerUrl}/gridColumn/${elementId}`;
     const body = new URLSearchParams({
       Type: type,
       Viewport: defaultViewport,
@@ -83,7 +86,7 @@ class ColumnSize extends PureComponent {
           return response.json()
             .catch(() => ({}))
             .then((data) => {
-              throw new Error(data.message || response.statusText);
+              throw new Error(data.message || `HTTP ${response.status}`);
             });
         }
         return response.json();

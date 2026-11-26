@@ -1,5 +1,35 @@
+// The holder wraps elemental's own Element (>= 5.4) plus the column size controls,
+// so the outline and spacing live on the holder instead of the inner element
 .elemental-editor-list > .element-editor__element-holder {
+  display: flex;
+  flex-direction: column;
+  outline: 1px solid #dbe0e9;
   padding: 0;
+
+  > .element-editor__element {
+    border-bottom: 0;
+    flex: 1 1 auto;
+    outline: 0;
+  }
+
+  > .element-editor__element:not(:last-child) {
+    padding-bottom: 0.5rem;
+  }
+}
+
+// Contain the floated "Add to bottom" button so the grid list starts below the toolbar
+.element-editor__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.element-editor__column-size {
+  padding: 0 1.5385rem 1rem;
+
+  hr {
+    margin-top: 0;
+  }
 }
 
 .element-editor__element {

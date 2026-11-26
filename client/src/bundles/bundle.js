@@ -2,7 +2,7 @@ import React from 'react';
 import Injector from 'lib/Injector';
 import ElementList from 'components/ElementList';
 import Header from 'components/Header';
-import Element from 'components/Element';
+import GridElement from 'components/Element';
 import ColumnSize from 'components/ColumnSize';
 import AddBlockToBottomButton from 'components/AddBlockToBottomButton';
 import AddBlockToTopButton from 'components/AddBlockToTopButton';
@@ -26,7 +26,7 @@ window.document.addEventListener('DOMContentLoaded', () => {
   Injector.component.registerMany({
     ElementList,
     ElementHeader: Header,
-    Element,
+    GridElement,
     ColumnSize,
     AddBlockToBottomButton,
     AddBlockToTopButton,

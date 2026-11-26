@@ -197,7 +197,7 @@ export default compose(
     draggedItem: monitor.getItem(),
   })),
   inject(
-    ['Element', 'Loading', 'HoverBar', 'DragPositionIndicator'],
+    ['GridElement', 'Loading', 'HoverBar', 'DragPositionIndicator'],
     (ElementComponent, LoadingComponent, HoverBarComponent, DragIndicatorComponent) => ({
       ElementComponent,
       LoadingComponent,

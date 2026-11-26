@@ -1,8 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { compose, bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import { autofill } from 'redux-form';
+import Config from 'lib/Config';
 
 class ColumnSize extends PureComponent {
   constructor(props) {
@@ -49,23 +47,68 @@ class ColumnSize extends PureComponent {
   }
 
   handleChangeSize(event) {
-    const { elementId, defaultViewport } = this.props;
-    this.props.actions.reduxForm.autofill(
-      `element.ElementForm_${elementId}`,
-      `PageElements_${elementId}_Size${defaultViewport}`,
-      event.target.value
-    );
+    this.saveColumnValue('Size', event.target.value);
     this.props.handleChangeSize(event);
   }
 
   handleChangeOffset(event) {
-    const { elementId, defaultViewport } = this.props;
-    this.props.actions.reduxForm.autofill(
-      `element.ElementForm_${elementId}`,
-      `PageElements_${elementId}_Offset${defaultViewport}`,
-      event.target.value
-    );
+    this.saveColumnValue('Offset', event.target.value);
     this.props.handleChangeOffset(event);
+  }
+
+  /**
+   * Persist the column size / offset directly on the element.
+   *
+   * Grid blocks are not inline editable, so there is no element form that would
+   * submit these values together with the page form.
+   */
+  saveColumnValue(type, value) {
+    const { elementId, defaultViewport } = this.props;
+    const url = `${Config.get('adminUrl')}elemental-area/gridColumn/${elementId}`;
+    const body = new URLSearchParams({
+      Type: type,
+      Viewport: defaultViewport,
+      Value: value,
+      SecurityID: Config.get('SecurityID'),
+    });
+
+    return fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response.json()
+            .catch(() => ({}))
+            .then((data) => {
+              throw new Error(data.message || response.statusText);
+            });
+        }
+        return response.json();
+      })
+      .then(() => this.refetchBlocks())
+      .catch((error) => {
+        const message = `Could not save ${type} ${defaultViewport}: ${error.message}`;
+        if (window.jQuery && window.jQuery.noticeAdd) {
+          window.jQuery.noticeAdd({ text: message, type: 'error', stayTime: 5000 });
+        } else {
+          // eslint-disable-next-line no-console
+          console.error(message);
+        }
+      });
+  }
+
+  /**
+   * Refetch the blocks of the elemental area, so the versioned badge
+   * ("modified") of the element is updated.
+   */
+  refetchBlocks() {
+    const client = window.ss && window.ss.apolloClient;
+    if (client && typeof client.refetchQueries === 'function') {
+      client.refetchQueries({ include: ['ReadBlocksForArea'] });
+    }
   }
 
   render() {
@@ -108,21 +151,10 @@ class ColumnSize extends PureComponent {
   }
 }
 
-function mapDispatchToProps(dispatch) {
-  return {
-    actions: {
-      reduxForm: bindActionCreators({ autofill }, dispatch),
-    },
-  };
-}
-
 ColumnSize.defaultProps = {};
 
 ColumnSize.propTypes = {
-  actions: PropTypes.shape({
-    reduxFrom: PropTypes.object,
-  }),
-  elementId: PropTypes.number,
+  elementId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   size: PropTypes.number,
   defaultViewport: PropTypes.string,
   offset: PropTypes.number,
@@ -131,7 +163,4 @@ ColumnSize.propTypes = {
   handleChangeOffset: PropTypes.func,
 };
 
-export default compose(
-  connect(() => {
-  }, mapDispatchToProps)
-)(ColumnSize);
+export default ColumnSize;

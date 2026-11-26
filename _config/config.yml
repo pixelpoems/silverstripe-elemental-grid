@@ -23,6 +23,10 @@ DNADesign\Elemental\Models\BaseElement:
   extensions:
     - WeDevelop\ElementalGrid\Extensions\BaseElementExtension
 
+DNADesign\Elemental\Controllers\ElementalAreaController:
+  extensions:
+    - WeDevelop\ElementalGrid\Extensions\ElementalAreaControllerExtension
+
 DNADesign\Elemental\Models\ElementContent:
   controller_class: WeDevelop\ElementalGrid\Controllers\ElementContentController
   extensions:
